@@ -7,7 +7,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-use Faker\Generator as faker;
+use Faker\Generator as Faker;
 
 class PostSeeder extends Seeder
 {

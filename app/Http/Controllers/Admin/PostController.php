@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -26,7 +29,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.posts.create');
     }
 
     /**
@@ -35,9 +38,18 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        //
+        $validated_data = $request->validated();
+        $validated_data['slug'] = Post::generateSlug($request->title);
+
+        $checkPost = Post::where('slug', $validated_data['slug'])->first();
+        if ($checkPost) {
+            return back()->withInput()->withErrors(['slug' => 'Impossibile creare slug,scegli un altro titolo!']);
+        }
+
+        $newPost = Post::create($validated_data); //con la create si fa la fill e la save con un comando solo
+        return redirect()->route('admin.posts.show', ['post' => $newPost->slug])->with('status', 'Progetto creato correttamente!');
     }
 
     /**
@@ -48,7 +60,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+        return view('admin.posts.show', compact('post'));
     }
 
     /**
@@ -59,7 +71,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        //
+        return view('admin.posts.edit', compact('post'));
     }
 
     /**
@@ -69,9 +81,19 @@ class PostController extends Controller
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+        $validated_data = $request->validated();
+        $validated_data['slug'] = Post::generateSlug($request->title);
+
+        $checkPost = Post::where('slug', $validated_data['slug'])->first();
+        if ($checkPost) {
+            return back()->withInput()->withErrors(['slug' => 'Impossibile creare slug,scegli un altro titolo!']);
+        }
+
+        $post->update($validated_data);
+
+        return redirect()->route('admin.posts.show', ['post' => $post->slug]);
     }
 
     /**
@@ -82,6 +104,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return redirect()->route('admin.posts.index');
     }
 }
